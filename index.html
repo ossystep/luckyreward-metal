@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Slug Awakening - Lucky Reward</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(145deg, #2c3e50, #1c2833);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #f39c12;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            border: none;
+            background-color: #34495e;
+            color: #ecf0f1;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 15px 30px;
+            margin: 15px;
+            border-radius: 50px;
+            border: none;
+            background-color: #e74c3c;
+            font-size: 1.3em;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+            box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.5);
+            transform: translateY(-3px);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+            grid-gap: 20px; /* Space between items */
+        }
+
+        ul li {
+            background-color: #2c3e50;
+            border: 1px solid #f39c12;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            text-align: center; /* Center text inside li */
+        }
+
+        @media (max-width: 600px) {
+            ul {
+                grid-template-columns: repeat(1, 1fr); /* 1 column on small screens */
+            }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            ul {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns for medium screens */
+            }
+        }
+
+        .results h2 {
+            color: #f39c12;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 600px) {
+            input, button {
+                font-size: 1em;
+            }
+
+            h1 {
+                font-size: 2.5em;
+            }
+
+            ul li {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Metal Slug Awakening: Lucky Reward</h1>
+
+    <label for="name">Enter Name:</label>
+    <br>
+    <input type="text" id="name" placeholder="Enter a name">
+    <br>
+    <button id="addNameBtn">Add Name</button>
+
+    <br><br>
+
+    <label for="rewardCount">Number of Rewards:</label>
+    <br>
+    <input type="number" id="rewardCount" min="1" value="1">
+
+    <br><br>
+
+    <h2>Participants List</h2>
+    <ul id="nameList"></ul>
+
+    <button id="getRewardBtn">Get Lucky Reward</button>
+
+    <div class="results">
+        <h2>Winners:</h2>
+        <ul id="winnersList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let nameCounts = {};
+
+            // Add Name to List
+            document.getElementById('addNameBtn').addEventListener('click', function () {
+                const name = document.getElementById('name').value.trim();
+                if (name !== "") {
+                    // Increase the count of the name or initialize it
+                    if (nameCounts[name]) {
+                        nameCounts[name] += 1;
+                    } else {
+                        nameCounts[name] = 1;
+                    }
+
+                    // Update the list to show names and their count
+                    updateNameList();
+
+                    document.getElementById('name').value = ''; // Clear input after adding
+                } else {
+                    alert("Please enter a name.");
+                }
+            });
+
+            // Update the name list with counts, ordered by the most frequent
+            function updateNameList() {
+                const nameList = document.getElementById('nameList');
+                nameList.innerHTML = ''; // Clear the list
+
+                // Sort names by count in descending order
+                const sortedNames = Object.keys(nameCounts).sort(function (a, b) {
+                    return nameCounts[b] - nameCounts[a];
+                });
+
+                // Append each name with its count to the list
+                sortedNames.forEach(function (name) {
+                    const li = document.createElement('li');
+                    li.textContent = `${name} (x${nameCounts[name]})`;
+                    nameList.appendChild(li);
+                });
+            }
+
+            // Get Lucky Reward
+            document.getElementById('getRewardBtn').addEventListener('click', function () {
+                const rewardCount = parseInt(document.getElementById('rewardCount').value);
+                let participants = [];
+
+                if (Object.keys(nameCounts).length === 0) {
+                    alert("No participants added!");
+                    return;
+                }
+
+                // Populate participants array with names according to their chance (count)
+                Object.keys(nameCounts).forEach(function (name) {
+                    for (let i = 0; i < nameCounts[name]; i++) {
+                        participants.push(name);
+                    }
+                });
+
+                if (rewardCount > Object.keys(nameCounts).length) {
+                    alert("The number of rewards cannot exceed the number of unique participants.");
+                    return;
+                }
+
+                // Shuffle participants and select unique random winners
+                const shuffledList = participants.sort(() => Math.random() - 0.5);
+                const uniqueWinners = new Set();
+                let winners = [];
+
+                // Keep picking names from the shuffled list until we have enough unique winners
+                for (let i = 0; i < shuffledList.length && winners.length < rewardCount; i++) {
+                    if (!uniqueWinners.has(shuffledList[i])) {
+                        uniqueWinners.add(shuffledList[i]);
+                        winners.push(shuffledList[i]);
+                    }
+                }
+
+                // Display winners
+                const winnersList = document.getElementById('winnersList');
+                winnersList.innerHTML = ''; // Clear previous results
+                winners.forEach(function (winner) {
+                    const li = document.createElement('li');
+                    li.textContent = winner;
+                    winnersList.appendChild(li);
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
